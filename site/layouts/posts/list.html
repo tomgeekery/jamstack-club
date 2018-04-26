@@ -1,0 +1,12 @@
+{{ partial "header" . }}
+
+<h1>{{ .Title }}</h1>
+
+<div>{{ .Content }}</div>
+
+<!-- List all posts -->
+{{ range .Data.Pages }}
+  <a href="{{ .URL }}">{{ .Title }}</a>
+{{ end }}
+
+{{ partial "footer" . }}

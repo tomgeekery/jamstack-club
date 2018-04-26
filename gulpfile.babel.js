@@ -6,6 +6,8 @@ import flatten from "gulp-flatten";
 import postcss from "gulp-postcss";
 import cssImport from "postcss-import";
 import cssnext from "postcss-cssnext";
+import cssnano from "cssnano";
+import uncss from "postcss-uncss";
 import BrowserSync from "browser-sync";
 import webpack from "webpack";
 import webpackConfig from "./webpack.conf";
@@ -21,15 +23,28 @@ gulp.task("hugo", (cb) => buildSite(cb));
 gulp.task("hugo-preview", (cb) => buildSite(cb, hugoArgsPreview));
 
 // Build/production tasks
-gulp.task("build", ["css", "js", "fonts"], (cb) => buildSite(cb, [], "production"));
-gulp.task("build-preview", ["css", "js", "fonts"], (cb) => buildSite(cb, hugoArgsPreview, "production"));
+gulp.task("build", ["css", "uncss", "js", "fonts"], (cb) => buildSite(cb, [], "production"));
+gulp.task("build-preview", ["css", "uncss", "js", "fonts"], (cb) => buildSite(cb, hugoArgsPreview, "production"));
 
 // Compile CSS with PostCSS
 gulp.task("css", () => (
   gulp.src("./src/css/*.css")
-    .pipe(postcss([cssImport({from: "./src/css/main.css"}), cssnext()]))
+    .pipe(postcss([
+      cssImport({from: "./src/css/main.css"}),
+      cssnext(),
+      cssnano()
+    ]))
     .pipe(gulp.dest("./dist/css"))
     .pipe(browserSync.stream())
+));
+
+// Remove unneeded CSS.
+gulp.task("uncss", () => (
+  gulp.src("./dist/css/main.css")
+    .pipe(postcss([
+      uncss({html: ["./site/layouts/**/*.html"]})
+    ]))
+    .pipe(gulp.dest("./dist/css"))
 ));
 
 // Compile Javascript
